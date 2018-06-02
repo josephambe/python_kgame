@@ -22,13 +22,13 @@ KGAME_SAVE_FILE = "kgame.sav"
 KGAME_SIDES = 4
 
 # Output buffer size in bytess
-KGAME_OUTPUT_BUFLEN = ((18*40)+1)
+KGAME_OUTPUT_BUFLEN = ((18 * 40) + 1)
 
 # Arrow keys
-dirs = { 'UP': 1, 'DOWN': 2, 'LEFT': 3, 'RIGHT': 4 }
+dirs = {'UP': 1, 'DOWN': 2, 'LEFT': 3, 'RIGHT': 4}
 
 # Keys accepted by game
-inputs = { 'LOAD': 5, 'SAVE': 6, 'EXIT': 7}
+inputs = {'LOAD': 5, 'SAVE': 6, 'EXIT': 7}
 
 
 def kgame_init(game):
@@ -38,43 +38,41 @@ def kgame_init(game):
 
 
 def kgame_add_random_tile(game):
-    # find random, but empty tile
-    # FIXME: will go to infinite loop if no empty tile
-    if kgame_is_move_possible(game) == False:
+
+    # 1.Find empty spaces
+    emptyCells = []  # list of dictionaries
+    cell = {}  # dictionary
+    for row in range(0, KGAME_SIDES):
+        for col in range(0, KGAME_SIDES):
+            if game['board'][row][col] == ' ':
+                cell['row'] = row
+                cell['col'] = col
+                emptyCells.append(cell)
+                cell = {}
+
+    # 2.Choose random empty space
+    random.shuffle(emptyCells)
+
+    if not emptyCells:
         return
-    
-    row = random.randint(0, KGAME_SIDES-1)
-    col = random.randint(0, KGAME_SIDES-1)
-    
-    while game['board'][row][col] != ' ':
-        row = random.randint(0, KGAME_SIDES-1)
-        col = random.randint(0, KGAME_SIDES-1)
 
-
-    # place to the random position 'A' or 'B' tile
-    game['board'][row][col] = 'A'
-    if random.randint(0, 2) == 1:
-        game['board'][row][col] = 'B'
+    # 3. Place 'A' or 'B' at a random empty cell
+    game['board'][emptyCells[0]["row"]][emptyCells[0]["col"]] = 'A'
+    if random.randint(0, 1) == 1:
+        game['board'][emptyCells[0]["row"]][emptyCells[0]["col"]] = 'B'
 
 
 def kgame_render(game):
     # (task 1)
 
-    bufferPosition = 0
-    output_buffer = 'Score: '+ str(game['score']) + '\n+---+---+---+---+\n|'
-    bufferPosition += len(output_buffer)
+    output_buffer = 'Score: ' + str(game['score']) + '\n+---+---+---+---+\n|'
 
     for row in range(0, KGAME_SIDES):
-     for col in range(0, KGAME_SIDES):
-         output_buffer += ' %c |' %game['board'][row][col]
-         bufferPosition += len(output_buffer)
-
-     output_buffer += '\n+---+---+---+---+\n'
-     bufferPosition += len(output_buffer)
-     if row != KGAME_SIDES-1:
-         output_buffer += '|'
-         bufferPosition += len(output_buffer)
-
+        for col in range(0, KGAME_SIDES):
+            output_buffer += ' %c |' % game['board'][row][col]
+        output_buffer += '\n+---+---+---+---+\n'
+        if row != KGAME_SIDES - 1:
+            output_buffer += '|'
 
     return output_buffer
 
@@ -86,9 +84,9 @@ def kgame_is_won(game):
         return False
 
     for row in range(0, KGAME_SIDES):
-     for col in range(0, KGAME_SIDES):
-         if game['board'][row][col] == 'K':
-             return True;
+        for col in range(0, KGAME_SIDES):
+            if game['board'][row][col] == 'K':
+                return True;
 
     return False
 
@@ -96,147 +94,149 @@ def kgame_is_won(game):
 def kgame_is_move_possible(game):
     # FIXME: Implement correctly (task 3)
 
-    #checks to see if there is an empty tile
+    # checks to see if there is an empty tile
     for col in range(0, KGAME_SIDES):
-     for row in range(0, KGAME_SIDES):
-         if game['board'][row][col] == ' ':
-             return True;
+        for row in range(0, KGAME_SIDES):
+            if game['board'][row][col] == ' ':
+                return True;
 
-    for col in range(0, KGAME_SIDES-1):
-     for row in range(0, KGAME_SIDES-1):
-         if game['board'][row][col] == game['board'][row+1][col] or game['board'][row][col] == game['board'][row][col+1]:
-             return True;
-
+    for col in range(0, KGAME_SIDES - 1):
+        for row in range(0, KGAME_SIDES - 1):
+            if game['board'][row][col] == game['board'][row + 1][col] or game['board'][row][col] == game['board'][row][col + 1]:
+                return True;
 
     return False;
 
 
 def kgame_score(game):
     game['score'] = 0
-##    a = "game['board'][row][col]"
-##    float(a)
-##    
-##    for row in range(0, KGAME_SIDES):
-##     for col in range(0, KGAME_SIDES):
-##         if game['board'][row][col] == ' ':
-##            game['score'] += pow(float(int(a))-64,2)
+
+    for row in range(0, KGAME_SIDES):
+        for col in range(0, KGAME_SIDES):
+            if game['board'][row][col] != ' ':
+                game['score'] += pow(ord(game['board'][row][col]) - 64, 2)
 
 
+def remove_whiteSpaces(game, row, direction):
+
+        # Find free cell closest to the side in that direction
+        if direction == dirs['LEFT']:
+            currentLeftFree = 0
+            for col in range(0, KGAME_SIDES):
+                if game['board'][row][col] != ' ':
+                    currentLeftFree += 1
+                else:
+                    break
+
+            for col in range(currentLeftFree + 1, KGAME_SIDES):
+
+                    if game['board'][row][col] != ' ' and game['board'][row][currentLeftFree] == ' ':
+                        game['board'][row][currentLeftFree] = game['board'][row][col]
+                        game['board'][row][col] = ' '
+                        currentLeftFree += 1
+
+        elif direction == dirs['RIGHT']:
+            currentRightFree = KGAME_SIDES
+            for col in range(KGAME_SIDES-1, -1):
+                if game['board'][row][col] != ' ':
+                    currentRightFree -= 1
+                else:
+                    break
+
+            for col in range(currentRightFree, -1):
+
+                if game['board'][row][col] != ' ' and game['board'][row][currentRightFree] == ' ':
+                    game['board'][row][currentRightFree] = game['board'][row][col]
+                    game['board'][row][col] = ' '
+                    currentRightFree -= 1
+
+
+        return game
 
 
 def kgame_update(game, direction):
-    
     # FIXME: Implement correctly (task 4)
-    changed = False;
+    changed = True;
 
     if direction == dirs['LEFT']:
-        if kgame_is_move_possible(game) == False:
-            kgame_add_random_tile(game)
-            return
-    
         for row in range(0, KGAME_SIDES):
+            game = remove_whiteSpaces(game, row, dirs['LEFT'])
 
-         currentLeftFree = 0
-         for col in range(0, KGAME_SIDES):
-             if game['board'][row][col] != ' ':
-                 currentLeftFree += 1
-             else:
-                 break
-                
-         for col in range(currentLeftFree+1, KGAME_SIDES):
-                if game['board'][row][col] != ' ' and game['board'][row][currentLeftFree] == ' ':
-                    game['board'][row][currentLeftFree] = game['board'][row][col]
-                    game['board'][row][col] = ' '
+            #Merge same cells in a row
+            for col in range(0, KGAME_SIDES - 1):
+                if game['board'][row][col] == game['board'][row][col + 1] and game['board'][row][col] != ' ':
+                    game['board'][row][col] = chr(ord(game['board'][row][col]) + 1)
+                    game['board'][row][col + 1] = ' '
                     changed = True
-                    currentLeftFree += 1
-                    
-    
-##         for col in range(0, KGAME_SIDES-1):
-##            for nextCol in range(col+1, KGAME_SIDES):
-##                if game['board'][row][col] == game['board'][row][nextCol] and game['board'][row][col] != ' ':
-##                   game['board'][row][nextCol] = chr(ord(game['board'][row][nextCol])+1)
-##                   game['board'][row][col] = ' '
-##                   changed = True
-##                   break
-##                elif game['board'][row][nextCol] != ' ':
-##                   break
-                    
-    
-    
+                    break
+
+            game = remove_whiteSpaces(game, row, dirs['LEFT'])
+
+
     if direction == dirs['RIGHT']:
-    
-        for row in range(0, KGAME_SIDES):
-         for col in range(0, KGAME_SIDES):
-            for nextCol in range(col+1, KGAME_SIDES):
-                if game['board'][row][col] != ' ' and game['board'][row][nextCol] == ' ':
-                    game['board'][row][nextCol] == game['board'][row][col]
-                    game['board'][row][col] == ' '
+        for row in range(KGAME_SIDES-1, -1):
+
+            game = remove_whiteSpaces(game, row, dirs['RIGHT'])
+
+            #Merge same cells in a row
+            for col in range(KGAME_SIDES-1, -1):
+                if game['board'][row][col] == game['board'][row][col - 1] and game['board'][row][col] != ' ':
+                    game['board'][row][col] = chr(ord(game['board'][row][col]) + 1)
+                    game['board'][row][col - 1] = ' '
                     changed = True
                     break
-                elif game['board'][row][col] != ' ':
-                    break
-    
-         for col in range(0, KGAME_SIDES-1):
-            for nextCol in range(col+1, KGAME_SIDES):
-                if game['board'][row][col] == game['board'][row][nextCol] and game['board'][row][col] != ' ':
-                   game['board'][row][nextCol] = chr(ord(game['board'][row][nextCol])+1)
-                   game['board'][row][col] = ' '
-                   changed = True
-                   break
-                elif game['board'][row][nextCol] != ' ':
-                   break
-    
-    
-    if direction == dirs['UP']:
-    
-        for row in range(0, KGAME_SIDES):
-         for col in range(0, KGAME_SIDES):
-            for nextRow in range(row+1, KGAME_SIDES):
-                if game['board'][row][col] == ' ' and game['board'][nextRow][col] != ' ':
-                   game['board'][row][col] = game['board'][nextRow][col]
-                   game['board'][nextRow][col] = ' '
-                   changed = True
-                   break
-                elif game['board'][row][col] != ' ':
-                   break;
-    
-        for col in range(0, KGAME_SIDES):
-            for nextRow in range(row+1, KGAME_SIDES):
-                if game['board'][row][col] == game['board'][nextRow][col] and game['board'][row][col] != ' ':
-                   game['board'][row][col] = chr(ord(game['board'][row][col])+1)
-                   game['board'][nextRow][col] = ' '
-                   changed = True
-                   break
-                elif game['board'][nextRow][col] != ' ':
-                   break
-    
-    
-    if direction == dirs['DOWN']:
-        
-        for col in range(0, KGAME_SIDES):
-         for row in range(KGAME_SIDES-1, 0, -1):
-            for nextRow in range(row-1, 0, -1):
-                if game['board'][row][col] == ' ' and game['board'][nextRow][col] != ' ':
-                   game['board'][row][col] = game['board'][nextRow][col]
-                   game['board'][nextRow][col] = ' '
-                   changed = True
-                   break
-                elif game['board'][row][col] != ' ':
-                   break;
-    
-        for row in range(KGAME_SIDES-1, 0, -1):
-            for nextRow in range(row-1, 0, -1):
-                if game['board'][row][col] == game['board'][nextRow][col] and game['board'][row][col] != ' ':
-                   game['board'][row][col] = chr(ord(game['board'][row][col])+1)
-                   game['board'][nextRow][col] = ' '
-                   changed = True
-                   break
-                elif game['board'][nextRow][col] != ' ':
-                   break
 
-                
+            game = remove_whiteSpaces(game, row, dirs['RIGHT'])
+
+    if direction == dirs['UP']:
+
+        for row in range(0, KGAME_SIDES):
+            for col in range(0, KGAME_SIDES):
+                for nextRow in range(row + 1, KGAME_SIDES):
+                    if game['board'][row][col] == ' ' and game['board'][nextRow][col] != ' ':
+                        game['board'][row][col] = game['board'][nextRow][col]
+                        game['board'][nextRow][col] = ' '
+                        changed = True
+                        break
+                    elif game['board'][row][col] != ' ':
+                        break;
+
+        for col in range(0, KGAME_SIDES):
+            for nextRow in range(row + 1, KGAME_SIDES):
+                if game['board'][row][col] == game['board'][nextRow][col] and game['board'][row][col] != ' ':
+                    game['board'][row][col] = chr(ord(game['board'][row][col]) + 1)
+                    game['board'][nextRow][col] = ' '
+                    changed = True
+                    break
+                elif game['board'][nextRow][col] != ' ':
+                    break
+
+    if direction == dirs['DOWN']:
+
+        for col in range(0, KGAME_SIDES):
+            for row in range(KGAME_SIDES - 1, 0, -1):
+                for nextRow in range(row - 1, 0, -1):
+                    if game['board'][row][col] == ' ' and game['board'][nextRow][col] != ' ':
+                        game['board'][row][col] = game['board'][nextRow][col]
+                        game['board'][nextRow][col] = ' '
+                        changed = True
+                        break
+                    elif game['board'][row][col] != ' ':
+                        break;
+
+        for row in range(KGAME_SIDES - 1, 0, -1):
+            for nextRow in range(row - 1, 0, -1):
+                if game['board'][row][col] == game['board'][nextRow][col] and game['board'][row][col] != ' ':
+                    game['board'][row][col] = chr(ord(game['board'][row][col]) + 1)
+                    game['board'][nextRow][col] = ' '
+                    changed = True
+                    break
+                elif game['board'][nextRow][col] != ' ':
+                    break
+
     kgame_add_random_tile(game)
     kgame_score(game)
+    kgame_render(game)
     return changed;
 
 
@@ -248,7 +248,3 @@ def kgame_save(game):
 def kgame_load(game):
     # FIXME: Implement correctly (task 6)
     pass
-
-
-
-

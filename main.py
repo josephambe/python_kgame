@@ -101,9 +101,9 @@ def main(stdscr):
             update_status(status, "Invalid game data structure. Press any key to exit...")
             break
 
+        buff = kgame.kgame_render(game);
         # Render 
         if render == True:
-            buff = kgame.kgame_render(game);
             field.clear()
             field.move(0, 0)
             field.addstr(buff)
