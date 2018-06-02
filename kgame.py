@@ -166,6 +166,22 @@ def remove_whiteSpaces(game, row, direction):
                 game['board'][col][row] = ' '
                 currentRowFree += 1
 
+    elif direction == dirs['DOWN']:
+
+        currentDownFree = KGAME_SIDES-1
+        for col in range(KGAME_SIDES-1, -1, -1):
+            if game['board'][col][row] != ' ':
+                currentDownFree -= 1
+            else:
+                break
+
+        for col in range(currentDownFree, -1, -1):
+
+            if game['board'][col][row] != ' ' and game['board'][currentDownFree][row] == ' ':
+                game['board'][currentDownFree][row] = game['board'][col][row]
+                game['board'][col][row] = ' '
+                currentDownFree -= 1
+
     return game
 
 
@@ -226,25 +242,18 @@ def kgame_update(game, direction):
     if direction == dirs['DOWN']:
 
         for col in range(0, KGAME_SIDES):
-            for row in range(KGAME_SIDES - 1, 0, -1):
-                for nextRow in range(row - 1, 0, -1):
-                    if game['board'][row][col] == ' ' and game['board'][nextRow][col] != ' ':
-                        game['board'][row][col] = game['board'][nextRow][col]
-                        game['board'][nextRow][col] = ' '
-                        changed = True
-                        break
-                    elif game['board'][row][col] != ' ':
-                        break;
 
-        for row in range(KGAME_SIDES - 1, 0, -1):
-            for nextRow in range(row - 1, 0, -1):
-                if game['board'][row][col] == game['board'][nextRow][col] and game['board'][row][col] != ' ':
-                    game['board'][row][col] = chr(ord(game['board'][row][col]) + 1)
-                    game['board'][nextRow][col] = ' '
+            game = remove_whiteSpaces(game, col, dirs['DOWN'])
+
+            # Merge same cells in a row
+            for row in range(0, KGAME_SIDES-1):
+                if game['board'][row][col] == game['board'][row+1][col] and game['board'][row+1][col] != ' ':
+                    game['board'][row+1][col] = chr(ord(game['board'][row+1][col]) + 1)
+                    game['board'][row][col] = ' '
                     changed = True
                     break
-                elif game['board'][nextRow][col] != ' ':
-                    break
+
+            game = remove_whiteSpaces(game, col, dirs['DOWN'])
 
     kgame_add_random_tile(game)
     kgame_score(game)
