@@ -119,39 +119,38 @@ def kgame_score(game):
 
 def remove_whiteSpaces(game, row, direction):
 
-        # Find free cell closest to the side in that direction
-        if direction == dirs['LEFT']:
-            currentLeftFree = 0
-            for col in range(0, KGAME_SIDES):
-                if game['board'][row][col] != ' ':
-                    currentLeftFree += 1
-                else:
-                    break
+    # Find free cell closest to the side in that direction
+    if direction == dirs['LEFT']:
+        currentLeftFree = 0
+        for col in range(0, KGAME_SIDES):
+            if game['board'][row][col] != ' ':
+                currentLeftFree += 1
+            else:
+                break
 
-            for col in range(currentLeftFree + 1, KGAME_SIDES):
+        for col in range(currentLeftFree + 1, KGAME_SIDES):
 
-                    if game['board'][row][col] != ' ' and game['board'][row][currentLeftFree] == ' ':
-                        game['board'][row][currentLeftFree] = game['board'][row][col]
-                        game['board'][row][col] = ' '
-                        currentLeftFree += 1
-
-        elif direction == dirs['RIGHT']:
-            currentRightFree = KGAME_SIDES
-            for col in range(KGAME_SIDES-1, -1):
-                if game['board'][row][col] != ' ':
-                    currentRightFree -= 1
-                else:
-                    break
-
-            for col in range(currentRightFree, -1):
-
-                if game['board'][row][col] != ' ' and game['board'][row][currentRightFree] == ' ':
-                    game['board'][row][currentRightFree] = game['board'][row][col]
+                if game['board'][row][col] != ' ' and game['board'][row][currentLeftFree] == ' ':
+                    game['board'][row][currentLeftFree] = game['board'][row][col]
                     game['board'][row][col] = ' '
-                    currentRightFree -= 1
+                    currentLeftFree += 1
 
+    elif direction == dirs['RIGHT']:
+        currentRightFree = KGAME_SIDES-1
+        for col in range(KGAME_SIDES-1, -1, -1):
+            if game['board'][row][col] != ' ':
+                currentRightFree -= 1
+            else:
+                break
 
-        return game
+        for col in range(currentRightFree, -1, -1):
+
+            if game['board'][row][col] != ' ' and game['board'][row][currentRightFree] == ' ':
+                game['board'][row][currentRightFree] = game['board'][row][col]
+                game['board'][row][col] = ' '
+                currentRightFree -= 1
+
+    return game
 
 
 def kgame_update(game, direction):
@@ -160,6 +159,7 @@ def kgame_update(game, direction):
 
     if direction == dirs['LEFT']:
         for row in range(0, KGAME_SIDES):
+
             game = remove_whiteSpaces(game, row, dirs['LEFT'])
 
             #Merge same cells in a row
@@ -174,12 +174,13 @@ def kgame_update(game, direction):
 
 
     if direction == dirs['RIGHT']:
-        for row in range(KGAME_SIDES-1, -1):
+
+        for row in range(0, KGAME_SIDES):
 
             game = remove_whiteSpaces(game, row, dirs['RIGHT'])
 
             #Merge same cells in a row
-            for col in range(KGAME_SIDES-1, -1):
+            for col in range(KGAME_SIDES-1, 0, -1):
                 if game['board'][row][col] == game['board'][row][col - 1] and game['board'][row][col] != ' ':
                     game['board'][row][col] = chr(ord(game['board'][row][col]) + 1)
                     game['board'][row][col - 1] = ' '
@@ -187,6 +188,7 @@ def kgame_update(game, direction):
                     break
 
             game = remove_whiteSpaces(game, row, dirs['RIGHT'])
+
 
     if direction == dirs['UP']:
 
