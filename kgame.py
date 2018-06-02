@@ -150,6 +150,22 @@ def remove_whiteSpaces(game, row, direction):
                 game['board'][row][col] = ' '
                 currentRightFree -= 1
 
+    elif direction == dirs['UP']:
+
+        currentRowFree = 0
+        for col in range(0, KGAME_SIDES):
+            if game['board'][col][row] != ' ':
+                currentRowFree += 1
+            else:
+                break
+
+        for col in range(currentRowFree + 1, KGAME_SIDES):
+
+            if game['board'][col][row] != ' ' and game['board'][currentRowFree][row] == ' ':
+                game['board'][currentRowFree][row] = game['board'][col][row]
+                game['board'][col][row] = ' '
+                currentRowFree += 1
+
     return game
 
 
@@ -192,26 +208,20 @@ def kgame_update(game, direction):
 
     if direction == dirs['UP']:
 
-        for row in range(0, KGAME_SIDES):
-            for col in range(0, KGAME_SIDES):
-                for nextRow in range(row + 1, KGAME_SIDES):
-                    if game['board'][row][col] == ' ' and game['board'][nextRow][col] != ' ':
-                        game['board'][row][col] = game['board'][nextRow][col]
-                        game['board'][nextRow][col] = ' '
-                        changed = True
-                        break
-                    elif game['board'][row][col] != ' ':
-                        break;
-
         for col in range(0, KGAME_SIDES):
-            for nextRow in range(row + 1, KGAME_SIDES):
-                if game['board'][row][col] == game['board'][nextRow][col] and game['board'][row][col] != ' ':
-                    game['board'][row][col] = chr(ord(game['board'][row][col]) + 1)
-                    game['board'][nextRow][col] = ' '
+
+            game = remove_whiteSpaces(game, col, dirs['UP'])
+
+            # Merge same cells in a row
+            for row in range(KGAME_SIDES-1, 0, -1):
+                if game['board'][row][col] == game['board'][row-1][col] and game['board'][row-1][col] != ' ':
+                    game['board'][row-1][col] = chr(ord(game['board'][row-1][col]) + 1)
+                    game['board'][row][col] = ' '
                     changed = True
                     break
-                elif game['board'][nextRow][col] != ' ':
-                    break
+
+            game = remove_whiteSpaces(game, col, dirs['UP'])
+
 
     if direction == dirs['DOWN']:
 
